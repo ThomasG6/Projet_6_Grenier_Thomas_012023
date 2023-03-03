@@ -6,7 +6,7 @@
 /backend/.env
 
 #images
-/images
+/backend/images/*
 
 #angular
 /frontend/.angular
