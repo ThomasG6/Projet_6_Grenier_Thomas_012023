@@ -1,0 +1,12 @@
+# Node
+/backend/node_modules
+/frontend/node_modules
+
+# env
+/backend/.env
+
+#images
+/images
+
+#angular
+/frontend/.angular
