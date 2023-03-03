@@ -75,3 +75,19 @@ exports.deleteSauce = (req, res) =>{
         .catch(error => res.status(500).json({error:error}));
 };
 
+//permet de récupérer une sauce par sont id
+exports.getOneSauce = (req, res) =>{
+    Sauce.findOne({ _id : req.params.id })
+        .then(sauce => res.status(200).json(sauce))
+        .catch(error => res.status(404).json({ error:error }));
+};
+
+//permet de récuperer l'ensemble des sauces
+exports.getAllSauces = (req, res) => {
+    Sauce.find()
+        .then(sauces => {
+            return res.status(200).json(sauces)
+        })
+        .catch(error => res.status(400).json({error:error}));
+};
+
