@@ -91,3 +91,67 @@ exports.getAllSauces = (req, res) => {
         .catch(error => res.status(400).json({error:error}));
 };
 
+//permet de gérer les likes et les dislikes
+exports.likeUser = (req, res) => {
+    const like = req.body.like;
+    const userId = req.body.userId;
+    let updateQuery = {$inc: {}};
+
+    Sauce.findOne({_id: req.params.id})
+       .then ((sauce) => {
+            switch (like) {
+                case 1 :{
+                    if (!sauce.usersLiked.includes(userId)){
+                        updateQuery.$push = {usersLiked: userId};
+                        updateQuery.$inc.likes = 1;
+                    }else{
+                        res.status(400).json({ error: "Vous avez déjà like" });
+                    }
+                    if (sauce.usersDisliked.includes(userId)){
+                        updateQuery.$pull = {usersDisliked: userId};
+                        updateQuery.$inc.dislikes = -1;
+
+                    }
+                    break;
+                }
+                case -1: {
+                    if (!sauce.usersDisliked.includes(userId)){
+                        updateQuery.$push = {usersDisliked: userId};
+                        updateQuery.$inc.dislikes = 1;
+                       
+                    } else{
+                        res.status(400).json({ error: "Vous avez déjà dislike" });
+                    }
+                    if (sauce.usersLiked.includes(userId)){
+                        updateQuery.$pull = {usersLiked: userId};
+                        updateQuery.$inc.likes = -1;
+
+                    }
+                    break;
+                }
+                case 0 : {
+                    if (sauce.usersLiked.includes(userId)) {
+                        updateQuery = {$pull:{usersLiked:userId}, $inc:{likes: -1}};
+                    }
+                    if (sauce.usersDisliked.includes(userId)){
+                        updateQuery = {$pull:{usersDisliked:userId}, $inc:{dislikes: -1}};
+                    }
+                    break;
+                }
+                default: {
+                    res.status(400).json({ error: "Mauvaise valeur" })
+                    break;
+                }
+            }
+            Sauce.updateOne({_id: req.params.id}, updateQuery)
+            .then(() => res.status(200).json({message: 'Votre vote a été pris en compte'}))
+            .catch(error => {
+                console.log("Update error:", error)
+                res.status(500).json({error:error})
+            });
+        })
+       .catch(error => {
+        console.log("Server error:", error)
+        res.status(500).json({error:error})
+       });
+};
