@@ -26,3 +26,32 @@ exports.createSauce = (req, res) => {
         .catch(error => res.status(400).json({error:error}));
 };
 
+//permet de modififer une sauce
+exports.modifySauce = (req, res) =>{
+    let sauceObject = {};
+
+    if (req.file) {
+        Sauce.findOne({_id : req.params.id})
+            .then ((sauce) => {
+                if (sauce.userId != req.auth.userId) {
+                    res.status(401).json({message : 'Action non authorisée'});
+                    return;
+                }else{
+                    const filename = sauce.imageUrl.split('/images/')[1];
+                    fs.unlinkSync(`images/${filename}`)
+                }
+            })
+            .catch(error => res.status(500).json({error}));
+        sauceObject = {
+            ...JSON.parse(req.body.sauce),
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+        };
+    } else {
+        sauceObject= {...req.body};
+    }
+    Sauce.updateOne({_id : req.params.id}, {...sauceObject, _id : req.params.id})
+        .then(() => res.status(200).json({message : 'Votre sauce à été modifié'}))
+        .catch(error => res.status(400).json({error}));
+};
+
+
